@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>캡처 미리보기 - Full Page Capture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(6px);
+      padding: 10px 16px; border-bottom: 1px solid #1e293b;
+    }
+    #metaText { color: #94a3b8; font-size: 12.5px; margin-right: auto; font-variant-numeric: tabular-nums; }
+    button {
+      background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+      border-radius: 8px; padding: 7px 12px; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    button:hover { background: #334155; }
+    button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    button.primary:hover { background: #1d4ed8; }
+    main { padding: 20px; display: flex; justify-content: center; }
+    #view { image-rendering: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.5); border-radius: 4px; }
+    #view.fit { width: 100%; max-width: 1200px; }
+    #view.z100 { width: auto; max-width: none; }
+    #view.z50 { width: 50%; }
+    .empty { color: #94a3b8; padding: 60px; text-align: center; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span id="metaText">미리보기</span>
+    <button id="btnFit">맞춤 폭</button>
+    <button id="btn100">100%</button>
+    <button id="btn50">50%</button>
+    <button id="btnPng" class="primary">PNG 저장</button>
+  </header>
+  <main><img id="view" class="fit" alt="캡처 이미지"></main>
+  <script src="utils.js"></script>
+  <script src="preview.js"></script>
+</body>
+</html>

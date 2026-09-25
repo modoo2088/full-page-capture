@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Full Page Capture",
+  "version": "1.0.0",
+  "description": "긴 웹페이지도 버튼 한 번에 전체 캡처. PNG / PDF / 클립보드 저장을 브라우저 안에서만 처리하는 스크린샷 도구 (No Upload).",
+  "minimum_chrome_version": "114",
+  "action": {
+    "default_title": "Full Page Capture",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite"
+  ]
+}
