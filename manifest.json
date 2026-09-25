@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Full Page Capture",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "긴 웹페이지도 버튼 한 번에 전체 캡처. PNG / PDF / 클립보드 저장을 브라우저 안에서만 처리하는 스크린샷 도구 (No Upload).",
   "minimum_chrome_version": "114",
   "action": {

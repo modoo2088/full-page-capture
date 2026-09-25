@@ -149,7 +149,9 @@ function hideProgress() {
 function showError(msg) {
   state.capturing = false;
   hideProgress();
-  showNotice('캡처에 실패했습니다. ' + (msg || ''), true);
+  const m = String(msg || '');
+  /* 접두사 중복 방지: 이미 '캡처에 실패했습니다'로 시작하면 그대로 표시 */
+  showNotice(m.indexOf('캡처에 실패했습니다') === 0 ? m : '캡처에 실패했습니다. ' + m, true);
 }
 
 /* ---------- 결과 표시 ---------- */

@@ -10,6 +10,33 @@
 
   function init(env) { ctx = env || {}; }
 
+  const sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  /* Chrome captureVisibleTab 쿼터: 초당 2회(MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND).
+   * 안전 마진을 두고 호출 간 최소 600ms 간격을 유지하고,
+     그래도 쿼터 오류가 나면 1.1초 대기 후 1회 재시도한다. */
+  const CAPTURE_MIN_INTERVAL_MS = 600;
+  let lastCaptureAt = 0;
+
+  async function captureNow(windowId) {
+    const wait = lastCaptureAt + CAPTURE_MIN_INTERVAL_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const url = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
+        lastCaptureAt = Date.now();
+        return url;
+      } catch (e) {
+        const msg = String((e && e.message) || '');
+        if (attempt === 0 && /MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND|quota/i.test(msg)) {
+          await sleep(1100);
+          continue;
+        }
+        throw e;
+      }
+    }
+  }
+
   function tsend(tabId, msg) {
     return new Promise(function (resolve, reject) {
       try {
@@ -56,11 +83,15 @@
       return 'Chrome 보안 정책으로 인해 이 페이지는 캡처할 수 없습니다.';
     }
     if (/이미 캡처가 진행 중/.test(m)) return m;
+    if (/MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND|quota/i.test(m)) {
+      return 'Chrome의 캡처 속도 제한(초당 2회)에 걸렸습니다. 몇 초 뒤 다시 시도해 주세요.';
+    }
     if (/captureVisibleTab|No image data|cannot access|Missing host permission/i.test(m)) {
       return 'Chrome 보안 정책으로 인해 이 페이지는 캡처할 수 없습니다.';
     }
     if (/activeTab|permission/i.test(m)) return '캡처 권한이 없습니다. 페이지를 한 번 클릭한 뒤 다시 시도해 주세요.';
-    return '캡처에 실패했습니다. (' + m.slice(0, 120) + ')';
+    /* 원시 오류는 그대로 전달(팝업이 '캡처에 실패했습니다.' 접두사를 한 번만 붙임) */
+    return m.slice(0, 160) || '알 수 없는 오류입니다.';
   }
 
   async function captureVisibleOnly(tab) {
@@ -68,7 +99,7 @@
     job.phase = '캡처 중'; job.total = 1; job.index = 0;
     ctx.post({ type: 'FPC_PROGRESS', job: ctx.snapshot() });
 
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+    const dataUrl = await captureNow(tab.windowId);
     const blob = FPC.dataUrlToBlob(dataUrl);
     const bmp = await createImageBitmap(blob);
     const width = bmp.width, height = bmp.height;
@@ -102,7 +133,7 @@
       const seg = plan.segments[i];
       const pr = await tsend(tab.id, { type: 'FPC_PREP', index: i, y: seg.y });
       if (!pr || !pr.ok) throw new Error((pr && pr.error) || '스크롤 이동에 실패했습니다.');
-      const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+      const dataUrl = await captureNow(tab.windowId);
       shots.push({ dataUrl: dataUrl, actualY: pr.data.actualY });
       job.index = i + 1;
       ctx.post({ type: 'FPC_PROGRESS', job: ctx.snapshot() });
